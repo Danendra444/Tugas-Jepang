@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>わたしの いちにち</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fbfaf6;
+    --ink: #2b2b2b;
+    --muted: #7a7670;
+    --sleep: #8fa3c7;
+    --morning: #f2c572;
+    --school: #e8837c;
+    --dorm: #9cc5a1;
+    --rest: #c3dcb6;
+    --dinner: #f0a868;
+    --study: #b9a3d6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Klee One", "Hiragino Maru Gothic ProN", sans-serif;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 32px 16px 48px; }
+  h1 { font-size: 2rem; font-weight: 600; margin: 0; }
+  .name { color: var(--muted); margin: 4px 0 0; }
+
+  .layout { display: grid; grid-template-columns: 1.3fr 1fr; gap: 32px; align-items: center; margin-top: 24px; }
+  #pie { width: 100%; height: auto; display: block; touch-action: none; cursor: pointer; user-select: none; }
+  #pie .slice { stroke: var(--ink); stroke-width: 1.5; }
+  #pie text { font-family: "Klee One", sans-serif; fill: var(--ink); pointer-events: none; }
+  #pie .lbl { font-size: 16px; font-weight: 600; }
+  #pie .lbl-t { font-size: 11px; fill: var(--muted); }
+  #pie .hr { font-size: 13px; fill: var(--muted); }
+  #pie .tick { stroke: var(--ink); stroke-width: 1; }
+  #pie .lead { stroke: var(--ink); stroke-width: 1; fill: none; }
+  #pie .rim { fill: none; stroke: var(--ink); stroke-width: 2; }
+  #pie .hand { stroke: var(--ink); stroke-width: 3; stroke-linecap: round; }
+  #pie .knob { fill: var(--ink); }
+  #pie .pin { fill: var(--bg); stroke: var(--ink); stroke-width: 2; }
+
+  .panel { border-top: 2px solid var(--ink); padding-top: 12px; }
+  .p-time { font-size: 2.6rem; font-weight: 600; line-height: 1; }
+  .p-time-kana { font-size: 1.1rem; margin-top: 6px; }
+  .p-jp { font-size: 1.35rem; line-height: 1.8; margin-top: 20px; }
+  .p-ro { color: var(--muted); font-size: .9rem; }
+  .p-id { font-size: .95rem; margin-top: 4px; }
+  .nav { display: flex; gap: 8px; margin-top: 20px; }
+  .nav button {
+    font: inherit; font-size: 1rem; cursor: pointer; background: none; color: var(--ink);
+    border: 1.5px solid var(--ink); border-radius: 6px; padding: 4px 14px;
+  }
+  .nav button:hover { background: var(--ink); color: var(--bg); }
+
+  @media (max-width: 680px) {
+    .layout { grid-template-columns: 1fr; gap: 16px; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>わたしの いちにち</h1>
+  <p class="name">ダネンドラ ・ 12 MIT</p>
+
+  <div class="layout">
+    <svg id="pie" viewBox="-320 -225 640 450" tabindex="0" aria-label="Jam 24 jam"></svg>
+    <div class="panel">
+      <div class="p-time" id="p-time"></div>
+      <div class="p-time-kana" id="p-time-kana"></div>
+      <div class="p-jp" id="p-jp"></div>
+      <div class="p-ro" id="p-ro"></div>
+      <div class="p-id" id="p-id"></div>
+      <div class="nav">
+        <button id="prev" aria-label="Sebelumnya">←</button>
+        <button id="next" aria-label="Berikutnya">→</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+  const H = (h, m = 0) => h + m / 60;
+  const items = [
+    { a: H(5), b: H(5, 20), jp: "まいにち、ごぜん ごじに おきます。", ro: "Mainichi, gozen go-ji ni okimasu.", id: "Setiap hari saya bangun pukul 5 pagi." },
+    { a: H(5, 20), b: H(6), jp: "それから、おいのりを します。", ro: "Sore kara, oinori o shimasu.", id: "Setelah itu, saya sholat." },
+    { a: H(6), b: H(7, 30), jp: "それから、がっこうの じゅんびを します。", ro: "Sore kara, gakkou no junbi o shimasu.", id: "Setelah itu, saya bersiap ke sekolah." },
+    { a: H(7, 30), b: H(14, 40), jp: "しちじはんから ごご にじ よんじゅっぷんまで がっこうで べんきょうします。", ro: "Shichi-ji han kara gogo ni-ji yonjuppun made gakkou de benkyou shimasu.", id: "Saya belajar di sekolah pukul 7.30–14.40." },
+    { a: H(14, 40), b: H(16), jp: "ごご さんじに りょうへ かえります。", ro: "Gogo san-ji ni ryou e kaerimasu.", id: "Saya pulang ke asrama pukul 3 sore." },
+    { a: H(16), b: H(18), jp: "よじに やすみます。", ro: "Yo-ji ni yasumimasu.", id: "Saya istirahat pukul 4 sore." },
+    { a: H(18), b: H(19), jp: "ろくじに ばんごはんを たべます。", ro: "Roku-ji ni bangohan o tabemasu.", id: "Saya makan malam pukul 6 sore." },
+    { a: H(19), b: H(22), jp: "しちじに べんきょうします。", ro: "Shichi-ji ni benkyou shimasu.", id: "Saya belajar pukul 7 malam." },
+    { a: H(22), b: H(29), jp: "じゅうじから ごじまで ねます。", ro: "Juu-ji kara go-ji made nemasu.", id: "Saya tidur pukul 10 malam sampai 5 pagi." }
+  ];
+  const slices = [
+    { a: H(22), b: H(29), jp: "ねます", t: "22.00–05.00", c: "var(--sleep)" },
+    { a: H(5), b: H(7, 30), jp: "あさ", t: "05.00–07.30", c: "var(--morning)" },
+    { a: H(7, 30), b: H(14, 40), jp: "がっこう", t: "07.30–14.40", c: "var(--school)" },
+    { a: H(14, 40), b: H(16), jp: "りょうへ", t: "15.00", c: "var(--dorm)", out: true },
+    { a: H(16), b: H(18), jp: "やすみます", t: "16.00–18.00", c: "var(--rest)" },
+    { a: H(18), b: H(19), jp: "ばんごはん", t: "18.00", c: "var(--dinner)", out: true },
+    { a: H(19), b: H(22), jp: "べんきょう", t: "19.00–22.00", c: "var(--study)" }
+  ];
+
+  const hourKana = ["れいじ","いちじ","にじ","さんじ","よじ","ごじ","ろくじ","しちじ","はちじ","くじ","じゅうじ","じゅういちじ","じゅうにじ"];
+  const minKana = { 0: "", 10: " じゅっぷん", 20: " にじゅっぷん", 30: "はん", 40: " よんじゅっぷん", 50: " ごじゅっぷん" };
+  function readTime(h) {
+    let hh = Math.floor(h) % 24, mm = Math.round((h - Math.floor(h)) * 60);
+    if (mm === 60) { mm = 0; hh = (hh + 1) % 24; }
+    const pm = hh >= 12, h12 = pm && hh > 12 ? hh - 12 : hh;
+    return {
+      digit: String(hh).padStart(2, "0") + "." + String(mm).padStart(2, "0"),
+      kana: (pm ? "ごご " : "ごぜん ") + hourKana[h12] + minKana[mm]
+    };
+  }
+
+  const R = 170, NS = "http://www.w3.org/2000/svg";
+  const $ = id => document.getElementById(id);
+  const pt = (h, r) => { const ang = (h / 24) * 2 * Math.PI - Math.PI / 2; return [r * Math.cos(ang), r * Math.sin(ang)]; };
+  const el = (tag, attrs, text) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (text != null) e.textContent = text; return e; };
+  const pie = $("pie");
+
+  slices.forEach(sl => {
+    const [x1, y1] = pt(sl.a, R), [x2, y2] = pt(sl.b, R);
+    const large = (sl.b - sl.a) > 12 ? 1 : 0;
+    pie.appendChild(el("path", { d: `M0 0 L${x1} ${y1} A${R} ${R} 0 ${large} 1 ${x2} ${y2} Z`, class: "slice", style: `fill:${sl.c}` }));
+  });
+  pie.appendChild(el("circle", { r: R, class: "rim" }));
+  for (let h = 0; h < 24; h++) {
+    const [x1, y1] = pt(h, R), [x2, y2] = pt(h, R + (h % 6 ? 6 : 11));
+    pie.appendChild(el("line", { x1, y1, x2, y2, class: "tick" }));
+    const [x, y] = pt(h, R + 22);
+    if (h % 3 === 0) pie.appendChild(el("text", { x, y, class: "hr", "text-anchor": "middle", "dominant-baseline": "middle" }, h));
+  }
+  slices.forEach(sl => {
+    const mid = (sl.a + sl.b) / 2;
+    if (sl.out) {
+      const [ax, ay] = pt(mid, R - 12), [bx, by] = pt(mid, R + 40);
+      const right = bx >= 0, ex = bx + (right ? 14 : -14), tx = ex + (right ? 4 : -4), anchor = right ? "start" : "end";
+      pie.appendChild(el("polyline", { points: `${ax},${ay} ${bx},${by} ${ex},${by}`, class: "lead" }));
+      pie.appendChild(el("text", { x: tx, y: by - 2, class: "lbl", "text-anchor": anchor, "font-size": 14 }, sl.jp));
+      pie.appendChild(el("text", { x: tx, y: by + 13, class: "lbl-t", "text-anchor": anchor }, sl.t));
+    } else {
+      const [x, y] = pt(mid, R * 0.64);
+      pie.appendChild(el("text", { x, y: y - 4, class: "lbl", "text-anchor": "middle" }, sl.jp));
+      pie.appendChild(el("text", { x, y: y + 13, class: "lbl-t", "text-anchor": "middle" }, sl.t));
+    }
+  });
+  const hand = el("line", { x1: 0, y1: 0, class: "hand" });
+  const knob = el("circle", { r: 7, class: "knob" });
+  pie.append(hand, knob, el("circle", { r: 6, class: "pin" }));
+
+  let cur = 0, curItem = -1;
+  const findItem = h => items.findIndex(it => (h >= it.a && h < it.b) || (h + 24 >= it.a && h + 24 < it.b));
+  function setTime(h) {
+    h = ((Math.round(h * 6) / 6) % 24 + 24) % 24;
+    cur = h;
+    const [x, y] = pt(h, R - 18);
+    hand.setAttribute("x2", x); hand.setAttribute("y2", y);
+    knob.setAttribute("cx", x); knob.setAttribute("cy", y);
+    const tr = readTime(h);
+    $("p-time").textContent = tr.digit;
+    $("p-time-kana").textContent = tr.kana;
+    const i = findItem(h);
+    if (i !== curItem) {
+      curItem = i;
+      $("p-jp").textContent = items[i].jp;
+      $("p-ro").textContent = items[i].ro;
+      $("p-id").textContent = items[i].id;
+    }
+  }
+
+  function hourFromEvent(e) {
+    const p = pie.createSVGPoint(); p.x = e.clientX; p.y = e.clientY;
+    const q = p.matrixTransform(pie.getScreenCTM().inverse());
+    let ang = Math.atan2(q.y, q.x) + Math.PI / 2;
+    if (ang < 0) ang += 2 * Math.PI;
+    return ang / (2 * Math.PI) * 24;
+  }
+  let dragging = false;
+  pie.addEventListener("pointerdown", e => { dragging = true; pie.setPointerCapture(e.pointerId); setTime(hourFromEvent(e)); });
+  pie.addEventListener("pointermove", e => { if (dragging) setTime(hourFromEvent(e)); });
+  pie.addEventListener("pointerup", () => { dragging = false; });
+  pie.addEventListener("pointercancel", () => { dragging = false; });
+  pie.addEventListener("keydown", e => {
+    if (e.key === "ArrowRight" || e.key === "ArrowUp") { setTime(cur + 1 / 6); e.preventDefault(); }
+    if (e.key === "ArrowLeft" || e.key === "ArrowDown") { setTime(cur - 1 / 6); e.preventDefault(); }
+  });
+  $("prev").onclick = () => setTime(items[(curItem + items.length - 1) % items.length].a);
+  $("next").onclick = () => setTime(items[(curItem + 1) % items.length].a);
+
+  setTime(H(5));
+</script>
+</body>
+</html>
